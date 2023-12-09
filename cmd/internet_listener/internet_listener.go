@@ -38,15 +38,26 @@ func main() {
 	pingChan := make(chan struct{})
 
 	go func() {
+
+		var err error
+
+		okMessage := os.Getenv("PINGER_OK_MESSAGE")
+		if okMessage == "" {
+			okMessage = "Internet is available"
+		}
+		badMessage := os.Getenv("PINGER_BAD_MESSAGE")
+		if badMessage == "" {
+			badMessage = "Internet is lost!"
+		}
+
 		for status := range alertChan {
-			var message string
 			switch status {
 			case sentinel.CheckStatusOk:
-				message = "Интернет на Живописной снова появился!"
+				err = n.Notify(okMessage)
 			case sentinel.CheckStatusBad:
-				message = "Интернет на Живописной пропал!"
+				err = n.Notify(badMessage)
 			}
-			err := n.Notify(message)
+
 			if err != nil {
 				log.Println(err)
 			}
